@@ -1,0 +1,19 @@
+[versions]
+agp = "7.4.2"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.1"
+kuikly = "2.23.2-2.1.21"
+
+[libraries]
+kuikly-core = { module = "com.tencent.kuikly-open:core", version.ref = "kuikly" }
+kuikly-core-annotations = { module = "com.tencent.kuikly-open:core-annotations", version.ref = "kuikly" }
+kuikly-core-ksp = { module = "com.tencent.kuikly-open:core-ksp", version.ref = "kuikly" }
+kuikly-core-render-android = { module = "com.tencent.kuikly-open:core-render-android", version.ref = "kuikly" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

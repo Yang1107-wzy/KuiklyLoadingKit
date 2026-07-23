@@ -1,0 +1,25 @@
+.DS_Store
+.gradle/
+.idea/
+.kotlin/
+**/build/
+local.properties
+*.iml
+
+# Android
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Apple / CocoaPods / Xcode
+Pods/
+vendor/bundle/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+iosApp/Pods/
+shared/build/
+
+# Generated runtime evidence is curated explicitly.
+artifacts/**/*.tmp

@@ -1,0 +1,10 @@
+source 'https://cdn.cocoapods.org/'
+
+platform :ios, '14.1'
+
+target 'KuiklyLoadingDemo' do
+  use_frameworks!
+
+  pod 'OpenKuiklyIOSRender', '2.23.2'
+  pod 'shared', :path => '../shared'
+end
