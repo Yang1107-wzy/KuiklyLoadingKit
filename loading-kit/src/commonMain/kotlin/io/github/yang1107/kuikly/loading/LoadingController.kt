@@ -15,11 +15,18 @@ internal interface LoadingControllerBinding {
  * Calls are designed for ordered Kuikly UI-thread use. This class does not
  * claim thread safety. Calls made while unbound update the latest state and
  * are delivered when an overlay binds; a positive timeout starts when that
- * state reaches a binding.
+ * state reaches a binding. Rebinding an active request preserves its original
+ * deadline instead of restarting the full timeout.
  */
-public class LoadingController {
+public class LoadingController internal constructor(
+    private val clock: LoadingClock,
+) {
+    public constructor() : this(MonotonicLoadingClock())
+
     private var machine: LoadingStateMachine = LoadingStateMachine()
     private var binding: LoadingControllerBinding? = null
+    private var timeoutGeneration: Long? = null
+    private var timeoutDeadlineMillis: Long? = null
 
     /** Whether a live overlay is currently bound. */
     public val isBound: Boolean
@@ -101,11 +108,7 @@ public class LoadingController {
         binding = newBinding
         val snapshot = machine.snapshot
         newBinding.render(snapshot)
-        snapshot.request?.effectiveTimeoutMillis?.let { delay ->
-            if (snapshot.isVisible) {
-                newBinding.scheduleTimeout(snapshot.generation, delay)
-            }
-        }
+        scheduleBoundTimeout(snapshot, newBinding)
     }
 
     internal fun destroy(destroyedBinding: LoadingControllerBinding) {
@@ -139,24 +142,73 @@ public class LoadingController {
         effects: List<LoadingEffect>,
         target: LoadingControllerBinding? = binding,
     ) {
-        if (target == null) {
-            return
-        }
         effects.forEach { effect ->
             when (effect) {
-                is LoadingEffect.Render -> target.render(effect.snapshot)
-                is LoadingEffect.ScheduleTimeout -> target.scheduleTimeout(
-                    effect.generation,
-                    effect.delayMillis,
-                )
-                is LoadingEffect.CancelTimeout -> target.cancelTimeout(effect.generation)
-                is LoadingEffect.NotifyDismiss -> target.notifyDismiss(
+                is LoadingEffect.Render -> target?.render(effect.snapshot)
+                is LoadingEffect.ScheduleTimeout -> {
+                    if (target != null) {
+                        rememberDeadline(effect.generation, effect.delayMillis)
+                        target.scheduleTimeout(
+                            effect.generation,
+                            effect.delayMillis,
+                        )
+                    }
+                }
+                is LoadingEffect.CancelTimeout -> {
+                    forgetDeadline(effect.generation)
+                    target?.cancelTimeout(effect.generation)
+                }
+                is LoadingEffect.NotifyDismiss -> target?.notifyDismiss(
                     LoadingDismissNotification(
                         generation = effect.generation,
                         reason = effect.reason,
                     )
                 )
             }
+        }
+    }
+
+    private fun scheduleBoundTimeout(
+        snapshot: LoadingSnapshot,
+        target: LoadingControllerBinding,
+    ) {
+        if (!snapshot.isVisible) {
+            return
+        }
+        val configuredDelay = snapshot.request?.effectiveTimeoutMillis ?: return
+        val deadline = if (timeoutGeneration == snapshot.generation) {
+            timeoutDeadlineMillis
+        } else {
+            null
+        }
+        val remaining = deadline?.minus(clock.nowMillis()) ?: configuredDelay
+        if (deadline == null) {
+            rememberDeadline(snapshot.generation, configuredDelay)
+        }
+        if (remaining <= 0L) {
+            timeout(target, snapshot.generation)
+        } else {
+            target.scheduleTimeout(snapshot.generation, remaining)
+        }
+    }
+
+    private fun rememberDeadline(
+        generation: Long,
+        delayMillis: Long,
+    ) {
+        val nowMillis = clock.nowMillis()
+        timeoutGeneration = generation
+        timeoutDeadlineMillis = if (delayMillis > Long.MAX_VALUE - nowMillis) {
+            Long.MAX_VALUE
+        } else {
+            nowMillis + delayMillis
+        }
+    }
+
+    private fun forgetDeadline(generation: Long) {
+        if (timeoutGeneration == generation) {
+            timeoutGeneration = null
+            timeoutDeadlineMillis = null
         }
     }
 }

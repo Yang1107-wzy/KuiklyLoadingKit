@@ -63,4 +63,8 @@ Timeout safety has two layers:
 2. Every callback carries a monotonically increasing generation, so an old
    callback is ignored even if physical cancellation is unavailable or races.
 
+Timeouts larger than Kuikly's `Int` timer limit are split into sequential
+chunks. Controller deadlines use a monotonic clock, so View rebinding schedules
+only the remaining duration.
+
 This is also exercised with a deterministic ManualScheduler in JVM tests.

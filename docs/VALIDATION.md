@@ -48,6 +48,8 @@ for the current shell only.
 | `plutil -lint iosApp/KuiklyLoadingDemo/Info.plist` | 0 | `OK` |
 | `./gradlew :shared:podspec :shared:linkPodDebugFrameworkIosSimulatorArm64` | 0 | Podspec generated and static simulator framework linked |
 | `./gradlew tasks :loading-kit:allTests ...` | 1 | Native test executable lacked a Kuikly render-host symbol; JVM tests passed |
+| `./gradlew :loading-kit:allTests :shared:compileKotlinIosSimulatorArm64 :shared:podspec :shared:linkPodDebugFrameworkIosSimulatorArm64` | 0 | Final aggregate test/compile/framework verification passed |
+| `./gradlew :loading-kit:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosSimulatorArm64 --rerun-tasks` | 0 | Forced non-cached iOS component and Gallery compilation passed |
 
 The initial Kotlin/Native run took approximately 4 minutes 21 seconds because
 it downloaded the compiler's LLVM and libffi dependencies. Subsequent compiles
@@ -77,10 +79,16 @@ were incremental.
 Verified:
 
 - pure state and Controller tests on JVM;
+- 21 JVM tests: 12 state-machine tests and 9 Controller tests, with zero
+  failures, errors, or skips;
 - loading component compilation for iOS Simulator ARM64;
 - Demo/KSP compilation for iOS Simulator ARM64;
 - CocoaPods static framework link;
 - iOS Xcode project structure and Info.plist parsing.
+
+A read-only completion review found no remaining Critical or Important code
+issues after fixing the iOS module-name collision, Android SDK path claim,
+rebind deadline semantics, and long-timeout chunking.
 
 Not verified:
 

@@ -1,5 +1,5 @@
 import SwiftUI
-import KuiklyLoadingDemo
+import KuiklyLoadingShared
 
 struct ContentView: View {
     var body: some View {

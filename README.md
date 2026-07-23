@@ -213,12 +213,14 @@ Android SDK 存在时，项目会自动启用 Android target 和 `androidApp`：
 ./gradlew :androidApp:assembleDebug
 ```
 
-iOS 宿主需要 CocoaPods：
+iOS 宿主使用 `Gemfile` 锁定的项目本地 CocoaPods：
 
 ```bash
 ./gradlew :shared:generateDummyFramework
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle config set --local path vendor/bundle
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle install
 cd iosApp
-pod install
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec pod install
 cd ..
 
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \

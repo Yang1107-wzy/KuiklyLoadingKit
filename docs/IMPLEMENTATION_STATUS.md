@@ -11,7 +11,7 @@ Updated: 2026-07-23
 | Gate 4: bonus features | Complete for build | Theme/touch/animation/lifecycle compiled |
 | Gate 5: demo and docs | Complete | Gallery, README, API, architecture, checklist |
 | Gate 6: platform validation | Blocked in part | Android SDK and CocoaPods absent |
-| Gate 7: release candidate | In progress | Final verification and local commits pending |
+| Gate 7: release candidate | In progress | Review passed; runtime evidence remains blocked |
 
 The public GitHub repository does not exist yet. All work remains local on
 `feature/loading-kit`; no GitHub write has been performed.

@@ -109,6 +109,28 @@ class LoadingControllerTest {
     }
 
     @Test
+    fun rebindingKeepsOriginalTimeoutDeadline() {
+        val clock = ManualLoadingClock()
+        val controller = LoadingController(clock)
+        val oldBinding = TestBinding(controller)
+        val newBinding = TestBinding(controller)
+
+        controller.bind(oldBinding)
+        controller.show(message = "A", timeoutMillis = 5_000L)
+        clock.advanceBy(4_900L)
+
+        controller.bind(newBinding)
+
+        assertEquals(100L, newBinding.scheduler.nextDelayMillis)
+        newBinding.scheduler.advanceBy(100L)
+        assertFalse(controller.isVisible)
+        assertEquals(
+            listOf(LoadingDismissReason.TIMEOUT),
+            newBinding.dismissals.map { it.reason },
+        )
+    }
+
+    @Test
     fun destroyThenReuseStartsFreshBindingWithoutLeakingOldView() {
         val controller = LoadingController()
         val oldBinding = TestBinding(controller)
@@ -242,6 +264,17 @@ class LoadingControllerTest {
                 next.action()
             }
             nowMillis = target
+        }
+    }
+
+    private class ManualLoadingClock : LoadingClock {
+        private var nowMillis: Long = 0L
+
+        override fun nowMillis(): Long = nowMillis
+
+        fun advanceBy(deltaMillis: Long) {
+            require(deltaMillis >= 0L)
+            nowMillis += deltaMillis
         }
     }
 }

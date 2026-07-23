@@ -7,14 +7,23 @@ The host deliberately contains no signing team. It uses:
 
 - `OpenKuiklyIOSRender` version `2.23.2`;
 - the local `shared` CocoaPod produced by Kotlin Multiplatform;
-- framework name `KuiklyLoadingDemo`;
+- framework name `KuiklyLoadingShared` (kept distinct from the app module);
 - deployment target iOS 14.1.
 
-After CocoaPods is available:
+Install the pinned project-local bundle only after user approval:
+
+```bash
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" \
+  bundle config set --local path vendor/bundle
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" \
+  bundle install
+```
+
+Then run:
 
 ```bash
 cd iosApp
-pod install
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec pod install
 cd ..
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   xcodebuild \

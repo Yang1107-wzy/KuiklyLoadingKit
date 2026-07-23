@@ -6,31 +6,31 @@ Pod::Spec.new do |spec|
     spec.authors                  = 'Yang1107-wzy'
     spec.license                  = 'Apache-2.0'
     spec.summary                  = 'Interactive iOS host framework for KuiklyLoadingKit'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/KuiklyLoadingDemo.framework'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/KuiklyLoadingShared.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '14.1'
-                
-                
-    if !Dir.exist?('build/cocoapods/framework/KuiklyLoadingDemo.framework') || Dir.empty?('build/cocoapods/framework/KuiklyLoadingDemo.framework')
+
+
+    if !Dir.exist?('build/cocoapods/framework/KuiklyLoadingShared.framework') || Dir.empty?('build/cocoapods/framework/KuiklyLoadingShared.framework')
         raise "
 
-        Kotlin framework 'KuiklyLoadingDemo' doesn't exist yet, so a proper Xcode project can't be generated.
+        Kotlin framework 'KuiklyLoadingShared' doesn't exist yet, so a proper Xcode project can't be generated.
         'pod install' should be executed after running ':generateDummyFramework' Gradle task:
 
             ./gradlew :shared:generateDummyFramework
 
         Alternatively, proper pod installation is performed during Gradle sync in the IDE (if Podfile location is set)"
     end
-                
+
     spec.xcconfig = {
         'ENABLE_USER_SCRIPT_SANDBOXING' => 'NO',
     }
-                
+
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':shared',
-        'PRODUCT_MODULE_NAME' => 'KuiklyLoadingDemo',
+        'PRODUCT_MODULE_NAME' => 'KuiklyLoadingShared',
     }
-                
+
     spec.script_phases = [
         {
             :name => 'Build shared',
@@ -50,5 +50,5 @@ Pod::Spec.new do |spec|
             SCRIPT
         }
     ]
-                
+
 end

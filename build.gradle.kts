@@ -10,10 +10,9 @@ plugins {
 }
 
 fun configuredAndroidSdk(): String? {
-    val explicit = providers.gradleProperty("androidSdkPath").orNull
-        ?: System.getenv("ANDROID_SDK_ROOT")
+    val explicit = System.getenv("ANDROID_SDK_ROOT")
         ?: System.getenv("ANDROID_HOME")
-    if (!explicit.isNullOrBlank()) {
+    if (!explicit.isNullOrBlank() && file(explicit).isDirectory) {
         return explicit
     }
 
@@ -21,9 +20,10 @@ fun configuredAndroidSdk(): String? {
     if (!localProperties.isFile) {
         return null
     }
-    return Properties().apply {
+    val configured = Properties().apply {
         localProperties.inputStream().use(::load)
     }.getProperty("sdk.dir")
+    return configured?.takeIf { file(it).isDirectory }
 }
 
 val requestedAndroid = providers.gradleProperty("enableAndroid").orNull?.let { rawValue ->

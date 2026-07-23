@@ -16,4 +16,3 @@ public data class LoadingAnimationConfig(
         }
     }
 }
-

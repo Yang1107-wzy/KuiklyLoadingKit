@@ -215,4 +215,3 @@ class LoadingStateMachineTest {
         assertIs<LoadingMachineState.Hidden>(machine.state)
     }
 }
-

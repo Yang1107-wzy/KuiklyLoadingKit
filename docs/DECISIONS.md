@@ -18,9 +18,9 @@ and the Tencent Maven metadata exposes `2.23.2-2.1.21` as the latest released
 The inspected machine has no Android SDK. The project therefore enables its
 Android targets and includes `androidApp` only when a valid SDK path is
 provided through `ANDROID_SDK_ROOT`, `ANDROID_HOME`, `local.properties`, or
-`-PandroidSdkPath`. This keeps common/JVM/iOS work testable without claiming an
-Android build. On a normal Android development machine, Android is enabled
-automatically.
+`local.properties`. The configured directory must exist. This keeps
+common/JVM/iOS work testable without claiming an Android build. On a normal
+Android development machine, Android is enabled automatically.
 
 ## 2026-07-23: pure state machine
 
@@ -75,3 +75,9 @@ to make tests link.
 
 The CocoaPods trunk API listed `OpenKuiklyIOSRender` `2.23.2`, matching the
 selected Kuikly release. The Podfile pins that exact version.
+
+## 2026-07-23: distinct iOS module names
+
+The application target remains `KuiklyLoadingDemo`; the Kotlin framework is
+named `KuiklyLoadingShared`. Keeping them distinct avoids a Swift module-name
+collision after CocoaPods integrates the framework into the app target.

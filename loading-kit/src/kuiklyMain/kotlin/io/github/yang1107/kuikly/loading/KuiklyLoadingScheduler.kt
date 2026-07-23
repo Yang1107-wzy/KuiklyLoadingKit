@@ -11,10 +11,30 @@ internal class KuiklyLoadingScheduler(
         delayMillis: Long,
         action: () -> Unit,
     ): LoadingScheduledTask {
-        val safeDelay = delayMillis.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-        val timeoutRef = pagerScope.setTimeout(safeDelay, action)
+        var cancelled = false
+        var timeoutRef: String? = null
+
+        fun scheduleNext(remainingMillis: Long) {
+            val chunkMillis = remainingMillis.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+            timeoutRef = pagerScope.setTimeout(chunkMillis) {
+                timeoutRef = null
+                if (cancelled) {
+                    return@setTimeout
+                }
+                val afterChunk = remainingMillis - chunkMillis
+                if (afterChunk > 0L) {
+                    scheduleNext(afterChunk)
+                } else {
+                    action()
+                }
+            }
+        }
+
+        scheduleNext(delayMillis)
         return LoadingScheduledTask {
-            pagerScope.clearTimeout(timeoutRef)
+            cancelled = true
+            timeoutRef?.let(pagerScope::clearTimeout)
+            timeoutRef = null
         }
     }
 }

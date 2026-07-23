@@ -70,7 +70,7 @@
 - (void)fetchContextCodeWithPageName:(NSString *)pageName
                       resultCallback:(KuiklyContextCodeCallback)callback {
     if (callback) {
-        callback(@"KuiklyLoadingDemo", nil);
+        callback(@"KuiklyLoadingShared", nil);
     }
 }
 

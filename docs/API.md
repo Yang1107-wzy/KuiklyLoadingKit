@@ -62,6 +62,7 @@ claim general multi-thread safety.
 - `hide`: idempotent.
 - `updateMessage`: returns `true` only when a visible request changed.
 - Calls to ordinary `show` before binding are retained and rendered at bind.
+- Rebinding a visible request preserves its original timeout deadline.
 
 ## `LoadingOverlay`
 

@@ -29,10 +29,10 @@ kotlin {
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
         framework {
-            baseName = "KuiklyLoadingDemo"
+            baseName = "KuiklyLoadingShared"
             isStatic = true
             export(project(":loading-kit"))
-            freeCompilerArgs += "-Xbinary=bundleId=io.github.yang1107.KuiklyLoadingDemo"
+            freeCompilerArgs += "-Xbinary=bundleId=io.github.yang1107.KuiklyLoadingShared"
         }
         license = "Apache-2.0"
         authors = "Yang1107-wzy"

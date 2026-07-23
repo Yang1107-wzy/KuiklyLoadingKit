@@ -30,6 +30,9 @@ lifecycle.
 Controller reuse after a View is destroyed creates a fresh state machine while
 preserving the monotonically increasing generation.
 
+Binding migration cancels the old View's physical timer and schedules only the
+remaining duration on the new View. The request deadline is not restarted.
+
 ## Dismissal invariant
 
 Each generation can leave Visible only once. Once hidden/replaced/destroyed,
