@@ -29,13 +29,15 @@ Kuikly UI 分离，提供全屏/局部 Overlay、命令式 Controller、声明�
 
 | 范围 | 状态 | 说明 |
 |---|---|---|
-| JVM 状态测试 | Pass | `:loading-kit:desktopTest` 已执行 |
+| JVM 状态测试 | Pass | 21 个状态机/Controller 测试 |
+| Android Debug APK | Pass | `:androidApp:assembleDebug` |
+| Android API 34 ARM64 运行 | Pass | 冷启动及 6 张真实截图 |
 | iOS Simulator ARM64 组件编译 | Pass | `:loading-kit:compileKotlinIosSimulatorArm64` |
 | iOS Simulator ARM64 Demo 编译 | Pass | `:shared:compileKotlinIosSimulatorArm64` |
 | iOS 静态 Framework | Pass | `:shared:linkPodDebugFrameworkIosSimulatorArm64` |
-| iOS 宿主运行 | Blocked | 本机尚无 CocoaPods，未安装、未运行 |
-| Android 构建与运行 | Blocked | 本机尚无 Android SDK/模拟器 |
-| 真实截图/GIF | Blocked | 只会在真实宿主运行后采集 |
+| CocoaPods / iOS 宿主 | Pass | Pods 集成及 Xcode workspace 构建 |
+| iPhone 17 Pro 模拟器运行 | Pass | 冷启动及 6 张真实截图 |
+| 超时关闭 | Pass | Android/iOS 均有关闭前后证据 |
 
 完整命令、环境和证据边界见
 [docs/VALIDATION.md](docs/VALIDATION.md)。
@@ -179,8 +181,9 @@ Overlay 在 `viewDidLoad` 绑定 Controller，在 `viewWillUnload` /
 - `blockTouch = false`：通过 Kuikly `touchEnable(false)` 尝试允许底层交互；
 - 隐藏时 Overlay 始终透明且禁用触摸。
 
-真正的穿透行为必须分别在 Android/iOS 宿主验证。当前尚未完成运行验证，
-因此不对两个平台写出未经证实的结论。
+Android/iOS 宿主均已完成渲染验证。受本机 macOS 界面控制权限限制，
+`blockTouch=false` 的人工点按穿透仍列为手工验收项，不把编译通过夸大为
+已完成交互验证。
 
 ## 工程结构
 
@@ -200,18 +203,17 @@ artifacts/    只保存真实运行证据
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
 
 ./gradlew :loading-kit:desktopTest
 ./gradlew :loading-kit:allTests
+./gradlew :androidApp:assembleDebug
 ./gradlew :shared:compileKotlinIosSimulatorArm64
 ./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64
 ```
 
-Android SDK 存在时，项目会自动启用 Android target 和 `androidApp`：
-
-```bash
-./gradlew :androidApp:assembleDebug
-```
+Android SDK 存在时，项目会自动启用 Android target 和 `androidApp`。
 
 iOS 宿主使用 `Gemfile` 锁定的项目本地 CocoaPods：
 
@@ -247,14 +249,34 @@ xcodebuild \
 - TouchBlockingDemo
 - LifecycleCleanupDemo
 
-Android/iOS 宿主均以 `LoadingGalleryPage` 为入口。真实截图尚未生成，证据目录
-中的说明文件明确记录采集条件。
+Android/iOS 宿主均以 `LoadingGalleryPage` 为入口。证据目录中的图片均由
+实际模拟器采集并人工检查。
+
+![Android full-screen loading](artifacts/android/android-full-screen.png)
+
+![iOS local loading](artifacts/ios/ios-local.png)
+
+为了在没有 macOS 辅助功能权限时仍能重复生成验收证据，宿主支持只用于
+验收的启动场景：
+
+```bash
+adb shell am start -W \
+  -n io.github.yang1107.kuikly.loading.demo/.MainActivity \
+  --es acceptanceScenario custom-theme
+
+xcrun simctl launch booted \
+  io.github.yang1107.KuiklyLoadingDemo \
+  --acceptance-scenario custom-theme
+```
+
+支持 `full-screen`、`timeout`、`custom-theme`、`local`；不传参数时仍进入
+完整交互式 Gallery。
 
 ## 已知限制
 
-- 尚未在 Android 或 iOS Simulator 中完成运行与触摸行为验证；
+- 真实动画轨迹未录制为 GIF，当前证据覆盖进入态和超时关闭前后；
+- `blockTouch=false` 的人工点按穿透尚待手工验收；
 - Android target 在没有 SDK 的机器上会被构建配置有意关闭；
-- CocoaPods `pod install` 尚未执行；
 - 未发布 Maven/CocoaPods 远程制品，目前通过项目依赖使用；
 - H5 不在 Issue #1480 的 P0 范围。
 
@@ -263,6 +285,8 @@ Android/iOS 宿主均以 `LoadingGalleryPage` 为入口。真实截图尚未生�
 - [API](docs/API.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [State machine](docs/STATE_MACHINE.md)
+- [Environment](docs/ENVIRONMENT.md)
+- [Build baseline](docs/BUILD_BASELINE.md)
 - [Validation](docs/VALIDATION.md)
 - [Issue #1480 checklist](docs/ISSUE_1480_CHECKLIST.md)
 - [Originality and references](docs/ORIGINALITY_AND_REFERENCES.md)

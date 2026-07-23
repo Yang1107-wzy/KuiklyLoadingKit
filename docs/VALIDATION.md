@@ -1,125 +1,150 @@
 # Validation log
 
-## Gate 0 environment snapshot
+Status date: 2026-07-23 (Asia/Shanghai)
 
-Date: 2026-07-23 (Asia/Shanghai)
+## Verified environment
 
-Validated code commit: `fc4618c`
-
-| Item | Observed state |
+| Item | Verified value |
 |---|---|
-| macOS | 26.5.2 (25F84) |
-| Architecture | arm64 |
-| Default Java | Temurin 11.0.29 |
-| Available project Java | Homebrew OpenJDK 17.0.17 |
-| Xcode | 26.0.1 via `DEVELOPER_DIR` |
-| iOS Simulator | iOS 26.0 devices available |
-| CocoaPods | Not installed |
-| Android Studio | Not found |
-| Android SDK | Not found |
-| Git | 2.53.0 |
-| GitHub CLI | 2.90.0, authenticated as `Yang1107-wzy` |
+| macOS | 26.5.2 (25F84), arm64 |
+| Project JDK | Homebrew OpenJDK 17.0.17 |
+| Gradle | 8.7 |
+| Android Gradle Plugin | 8.6.1 |
+| Kotlin | 2.1.21 |
+| KSP | 2.1.21-2.0.1 |
+| Kuikly | 2.23.2-2.1.21 |
+| Android SDK | API 34, Build Tools 34.0.0 |
+| Android emulator | 36.6.11 |
+| Android system image | API 34 Google APIs ARM64 r14 |
+| Android AVD | Pixel 7 profile, Android 14, arm64-v8a |
+| Xcode | 26.0.1 (17A400) |
+| iOS simulator | iPhone 17 Pro, iOS 26.0 |
+| CocoaPods | 1.17.0, project-local Bundler install |
 
-Issue #1480 was open at inspection time. Its required scope remained
-full-screen/local loading, show/hide plus timeout management, a declarative
-DSL, multi-platform support, API documentation, and examples. No maintainer
-scope clarification was present in the comments.
+The global default Java, global Ruby gems, Xcode selection, Git configuration,
+and signing settings were not changed.
 
-## Upstream evidence
+## Automated and build verification
 
-- KuiklyUI tag `2.23.2`: commit
-  `7afa0f74275211c2b5c8f4610484c2705dd286b0`
-- KuiklyUI inspected main: commit
-  `b396748db2818fa3beda4e00fa8b0daee19bbb2a`
-- KuiklyChatUI inspected main: commit
-  `2bb10e88e9c8ab26c2f9d5f2d26f3317c8e376d8`
+All Gradle commands use JDK 17. iOS commands additionally use:
 
-## Command log
+```bash
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+```
 
-All commands below were executed from the repository root with JDK 17 selected
-for the current shell only.
+Android commands additionally use the user SDK through `ANDROID_SDK_ROOT` and
+`ANDROID_HOME`.
 
-| Command | Exit | Result |
-|---|---:|---|
-| `./gradlew tasks :loading-kit:tasks :shared:tasks` | 0 | Gradle model and tasks discovered |
-| `./gradlew :loading-kit:desktopTest` | 1 then 0 | Expected TDD RED for missing types, then GREEN after implementation |
-| `./gradlew :loading-kit:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosSimulatorArm64` | 0 | Initial Kotlin/Native baseline; first run downloaded LLVM/libffi |
-| `./gradlew :loading-kit:compileKotlinIosSimulatorArm64 :loading-kit:desktopTest` | 1 then 0 | Public/internal visibility error fixed with private binding adapter |
-| `./gradlew :shared:compileKotlinIosSimulatorArm64` | 0 | Gallery plus KSP compilation passed; deprecation warning then removed |
-| `xcodebuild -list -project iosApp/KuiklyLoadingDemo.xcodeproj` | 0 | Target and shared scheme recognized |
-| `plutil -lint iosApp/KuiklyLoadingDemo/Info.plist` | 0 | `OK` |
-| `./gradlew :shared:podspec :shared:linkPodDebugFrameworkIosSimulatorArm64` | 0 | Podspec generated and static simulator framework linked |
-| `./gradlew tasks :loading-kit:allTests ...` | 1 | Native test executable lacked a Kuikly render-host symbol; JVM tests passed |
-| `./gradlew :loading-kit:allTests :shared:compileKotlinIosSimulatorArm64 :shared:podspec :shared:linkPodDebugFrameworkIosSimulatorArm64` | 0 | Final aggregate test/compile/framework verification passed |
-| `./gradlew :loading-kit:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosSimulatorArm64 --rerun-tasks` | 0 | Forced non-cached iOS component and Gallery compilation passed |
-| `./gradlew :loading-kit:allTests :shared:compileKotlinIosSimulatorArm64 :shared:linkPodDebugFrameworkIosSimulatorArm64 --rerun-tasks` | 0 | Final non-cached verification of commit `fc4618c`; 12 tasks executed |
+| Command | Result |
+|---|---|
+| `./gradlew tasks` | Pass |
+| `./gradlew :loading-kit:allTests` | Pass |
+| `./gradlew :shared:compileTestKotlinIosSimulatorArm64` | Pass |
+| `./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64` | Pass |
+| `./gradlew :androidApp:assembleDebug` | Pass |
+| `bundle exec pod install` from `iosApp/` | Pass, 2 Pods installed |
+| `xcodebuild ... -scheme KuiklyLoadingDemo ... build` | Pass |
+| `plutil -lint iosApp/KuiklyLoadingDemo/Info.plist` | Pass |
 
-The initial Kotlin/Native run took approximately 4 minutes 21 seconds because
-it downloaded the compiler's LLVM and libffi dependencies. Subsequent compiles
-were incremental.
+The pure state/Controller suite contains 21 JVM tests: 12 state-machine tests
+and 9 Controller tests. The acceptance-scenario parser is also compiled as a
+Kotlin/Native test source. Standalone native test executables remain
+intentionally skipped because Kuikly core expects the render-host symbol
+`com_tencent_kuikly_IsCurrentOnContextThread`; native compatibility is
+validated by compilation, framework linking, Pods integration, and the real
+iOS host run.
+
+## Real runtime verification
+
+### Android
+
+- Built APK: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
+- Emulator: Android 14, API 34, `arm64-v8a`, 1080 × 2400
+- Install: `adb install -r ...` returned `Success`
+- Launch: cold start returned `Status: ok`
+- Screenshots were captured with `adb exec-out screencap -p`
+
+Verified states:
+
+- interactive gallery;
+- full-screen overlay;
+- timeout overlay while visible;
+- timeout overlay after dismissal, with `Last event: TIMEOUT`;
+- custom theme;
+- local overlay bounded by its acceptance card.
+
+### iOS
+
+- Host built from `iosApp/KuiklyLoadingDemo.xcworkspace`
+- Simulator: iPhone 17 Pro, iOS 26.0, 1206 × 2622
+- Install: `xcrun simctl install` passed
+- Launch: bundle `io.github.yang1107.KuiklyLoadingDemo` returned a process id
+- Screenshots were captured with `xcrun simctl io ... screenshot`
+
+Verified states:
+
+- interactive gallery;
+- full-screen overlay;
+- timeout overlay while visible;
+- timeout overlay after dismissal, with `Last event: TIMEOUT`;
+- custom theme;
+- local overlay bounded by its acceptance card.
+
+All runtime images were opened and visually inspected after capture. They were
+not generated, composited, or substituted.
 
 ## Failure and repair record
 
-1. Gradle 7.6 Kotlin DSL did not accept two APIs used in the first settings
-   draft. They were replaced with version-compatible parsing.
-2. A direct Kuikly dependency in `commonMain` had no JVM variant. Kuikly UI was
-   moved to a dedicated `kuiklyMain` source set.
-3. The first state test compilation failed because the types did not exist.
-   This was the intentional TDD RED; implementation then made the suite pass.
-4. A public View implementing an internal binding exposed internal snapshot
-   types. A private adapter now implements the internal interface.
-5. The default hierarchy warning was removed by explicitly disabling the
-   default template for the intentional custom source-set graph.
-6. Deprecated `fontWeightSemisolid()` calls were changed to
-   `fontWeightSemiBold()`.
-7. A standalone iOS native test executable could not resolve
-   `com_tencent_kuikly_IsCurrentOnContextThread`, implemented by
-   OpenKuiklyIOSRender. The pure suite is now explicitly JVM-backed, while iOS
-   uses compile/framework integration checks rather than a fake test symbol.
-
-## Current build boundary
-
-Verified:
-
-- pure state and Controller tests on JVM;
-- 21 JVM tests: 12 state-machine tests and 9 Controller tests, with zero
-  failures, errors, or skips;
-- loading component compilation for iOS Simulator ARM64;
-- Demo/KSP compilation for iOS Simulator ARM64;
-- CocoaPods static framework link;
-- iOS Xcode project structure and Info.plist parsing.
-
-A read-only completion review found no remaining Critical or Important code
-issues after fixing the iOS module-name collision, Android SDK path claim,
-rebind deadline semantics, and long-timeout chunking.
-
-Not verified:
-
-- `pod install`;
-- iOS host build after Pods integration;
-- iOS Simulator launch or interaction;
-- Android compilation, installation, launch, or interaction;
-- touch pass-through behavior on either platform;
-- screenshots and GIF.
-
-## Platform blockers
-
-| Platform | Blocker | Consequence |
-|---|---|---|
-| Android | SDK/platform-tools/emulator/AVD absent | Android target is conditionally disabled; no build/runtime claim |
-| iOS | CocoaPods command absent | Framework passes, but host dependencies and runtime are not integrated |
+1. The first state tests failed because the production types did not exist.
+   This was the intentional TDD red phase.
+2. The original direct Kuikly dependency had no JVM variant. Kuikly UI code
+   was isolated in a dedicated source set so the pure JVM test surface remains
+   executable.
+3. The first iOS host naming used the same module name for app and framework.
+   The framework was renamed to `KuiklyLoadingShared`.
+4. A standalone native test executable lacked a symbol supplied by the iOS
+   render host. The project does not inject a fake production symbol; it uses
+   JVM pure tests plus native integration checks.
+5. CocoaPods was absent. Version 1.17.0 was installed only in
+   `vendor/bundle`, then `pod install` completed.
+6. AGP 7.4.2 failed D8 transforms on Kotlin 2.1 bytecode with
+   `com.android.tools.r8.kotlin.H`. Android's compatibility matrix requires
+   D8/R8 8.6.17 for Kotlin 2.1, so the project moved to AGP 8.6.1 and Gradle
+   8.7. The next `assembleDebug` passed.
+7. Homebrew's `avdmanager` could not see a separate user SDK root. The same
+   official command-line tools were installed inside that SDK root; the AVD
+   then created and booted successfully.
+8. macOS Computer Use permissions were unavailable. Rather than bypass OS
+   permissions, reproducible host launch parameters were added to place the
+   real app in each evidence state before normal simulator screenshot capture.
 
 ## Evidence paths
 
-- JVM test reports: `loading-kit/build/reports/tests/desktopTest/`
-- iOS framework output:
-  `shared/build/bin/iosSimulatorArm64/podDebugFramework/`
-- Generated local podspec: `shared/shared.podspec`
-- Runtime evidence directories: `artifacts/android/`, `artifacts/ios/`,
-  `artifacts/demo/` (currently contain status documentation only)
+Android:
 
-## Acceptance matrix
+- `artifacts/android/android-gallery.png`
+- `artifacts/android/android-full-screen.png`
+- `artifacts/android/android-timeout.png`
+- `artifacts/android/android-timeout-dismissed.png`
+- `artifacts/android/android-custom-theme.png`
+- `artifacts/android/android-local.png`
 
-The current requirement-to-evidence matrix is maintained in
-`docs/ISSUE_1480_CHECKLIST.md`. Any runtime row remains Blocked until a real
-simulator/device run and evidence capture.
+iOS:
+
+- `artifacts/ios/ios-gallery.png`
+- `artifacts/ios/ios-full-screen.png`
+- `artifacts/ios/ios-timeout.png`
+- `artifacts/ios/ios-timeout-dismissed.png`
+- `artifacts/ios/ios-custom-theme.png`
+- `artifacts/ios/ios-local.png`
+
+## Remaining manual boundaries
+
+- The screenshots prove rendered states and timeout dismissal, but not the
+  subjective smoothness of the fade animation.
+- `blockTouch=false` compiles and is demonstrated in the gallery; a human tap
+  pass-through session was not automated because macOS UI-control permission
+  was unavailable.
+- Project-side acceptance and activity certificate registration remain
+  external actions. No GitHub repository, push, release, or Issue completion
+  comment has been created by this local run.

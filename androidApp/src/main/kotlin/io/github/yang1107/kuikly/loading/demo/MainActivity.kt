@@ -22,11 +22,15 @@ class MainActivity : Activity(), KuiklyRenderViewBaseDelegatorDelegate {
             )
         }
         setContentView(container)
+        val pageData = intent
+            .getStringExtra(ACCEPTANCE_SCENARIO_PARAM)
+            ?.let { mapOf(ACCEPTANCE_SCENARIO_PARAM to it) }
+            ?: emptyMap()
         renderDelegator.onAttach(
             container,
             "",
             PAGE_NAME,
-            emptyMap(),
+            pageData,
         )
     }
 
@@ -54,5 +58,6 @@ class MainActivity : Activity(), KuiklyRenderViewBaseDelegatorDelegate {
 
     private companion object {
         const val PAGE_NAME: String = "LoadingGalleryPage"
+        const val ACCEPTANCE_SCENARIO_PARAM: String = "acceptanceScenario"
     }
 }

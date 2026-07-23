@@ -5,22 +5,27 @@
 - Kuikly: `2.23.2-2.1.21`
 - Kotlin: `2.1.21`
 - KSP: `2.1.21-2.0.1`
-- Android Gradle Plugin: `7.4.2`
-- Gradle: `7.6.3`
+- Android Gradle Plugin: `8.6.1`
+- Gradle: `8.7`
 
 Kuikly `2.23.2` is the latest official GitHub release observed during Gate 0,
 and the Tencent Maven metadata exposes `2.23.2-2.1.21` as the latest released
 `core` artifact. The Gradle, AGP, Kotlin, and KSP versions follow the Kuikly
-`2.23.2` source configuration.
+`2.23.2` source configuration. The first Android attempt used AGP 7.4.2, but
+its bundled D8 could not transform Kotlin 2.1 bytecode. Android's compatibility
+matrix requires D8/R8 8.6.17 for Kotlin 2.1, which is supplied by AGP 8.6.
+AGP 8.6 in turn requires Gradle 8.7 and JDK 17. The complete wrapper was
+regenerated with Gradle 8.7, and its distribution ZIP is protected by the
+official SHA-256 checksum.
 
-## 2026-07-23: Android configuration without an SDK
+## 2026-07-23: conditional Android configuration
 
-The inspected machine has no Android SDK. The project therefore enables its
-Android targets and includes `androidApp` only when a valid SDK path is
-provided through `ANDROID_SDK_ROOT`, `ANDROID_HOME`, `local.properties`, or
+The project enables its Android targets and includes `androidApp` only when a
+valid SDK path is provided through `ANDROID_SDK_ROOT`, `ANDROID_HOME`, or
 `local.properties`. The configured directory must exist. This keeps
-common/JVM/iOS work testable without claiming an Android build. On a normal
-Android development machine, Android is enabled automatically.
+common/JVM/iOS work testable on machines without an SDK. The final validation
+machine now has a user-local API 34 SDK and ARM64 emulator, so Android is
+enabled and verified.
 
 ## 2026-07-23: pure state machine
 
@@ -81,3 +86,12 @@ selected Kuikly release. The Podfile pins that exact version.
 The application target remains `KuiklyLoadingDemo`; the Kotlin framework is
 named `KuiklyLoadingShared`. Keeping them distinct avoids a Swift module-name
 collision after CocoaPods integrates the framework into the app target.
+
+## 2026-07-23: reproducible acceptance launch states
+
+macOS Computer Use permission was not available for automated Simulator clicks.
+The implementation does not bypass that OS boundary. Android Intent extras and
+iOS process arguments select one of four deterministic evidence states:
+`full-screen`, `timeout`, `custom-theme`, or `local`. Each state still runs the
+real Kuikly host and component; normal launches continue to open the complete
+interactive gallery.

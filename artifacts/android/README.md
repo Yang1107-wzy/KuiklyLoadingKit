@@ -1,8 +1,25 @@
-# Android evidence status
+# Android runtime evidence
 
-No Android runtime evidence has been captured. The inspected machine has no
-Android SDK, platform tools, emulator, or AVD.
+Captured from a real API 34 Google APIs ARM64 emulator using a Pixel 7 profile.
+Guest: Android 14, `arm64-v8a`, 1080 × 2400.
 
-When the toolchain is available, capture real screenshots with `adb exec-out
-screencap -p` after each acceptance scenario and update
-`docs/VALIDATION.md`.
+Files:
+
+- `android-gallery.png`
+- `android-full-screen.png`
+- `android-timeout.png`
+- `android-timeout-dismissed.png`
+- `android-custom-theme.png`
+- `android-local.png`
+
+The acceptance states are reproducible with:
+
+```bash
+adb shell am start -W \
+  -n io.github.yang1107.kuikly.loading.demo/.MainActivity \
+  --es acceptanceScenario full-screen
+```
+
+Replace `full-screen` with `timeout`, `custom-theme`, or `local`. Omitting the
+extra opens the interactive gallery. Screenshots were captured with
+`adb exec-out screencap -p`; all files were opened and visually checked.

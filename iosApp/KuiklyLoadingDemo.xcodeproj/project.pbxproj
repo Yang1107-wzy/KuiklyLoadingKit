@@ -11,9 +11,13 @@
 		A10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ContentView.swift */; };
 		A10000000000000000000003 /* KuiklyRenderViewPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* KuiklyRenderViewPage.swift */; };
 		A10000000000000000000004 /* KuiklyRenderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* KuiklyRenderViewController.m */; };
+		E61EDA698AB6A0DDEF945E65 /* Pods_KuiklyLoadingDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7316EC85EF9409D616B5CF0A /* Pods_KuiklyLoadingDemo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7316EC85EF9409D616B5CF0A /* Pods_KuiklyLoadingDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KuiklyLoadingDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7714D63073AD431C7A47D1C5 /* Pods-KuiklyLoadingDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KuiklyLoadingDemo.release.xcconfig"; path = "Target Support Files/Pods-KuiklyLoadingDemo/Pods-KuiklyLoadingDemo.release.xcconfig"; sourceTree = "<group>"; };
+		90C27BA9F1954DD8F3EC7DE2 /* Pods-KuiklyLoadingDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KuiklyLoadingDemo.debug.xcconfig"; path = "Target Support Files/Pods-KuiklyLoadingDemo/Pods-KuiklyLoadingDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		A20000000000000000000001 /* KuiklyLoadingDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KuiklyLoadingDemoApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A20000000000000000000003 /* KuiklyRenderViewPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KuiklyRenderViewPage.swift; sourceTree = "<group>"; };
@@ -29,17 +33,38 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E61EDA698AB6A0DDEF945E65 /* Pods_KuiklyLoadingDemo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		02C32C89F98AC84A31393935 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7316EC85EF9409D616B5CF0A /* Pods_KuiklyLoadingDemo.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		58A1600C4285FFC458B4A6FE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				90C27BA9F1954DD8F3EC7DE2 /* Pods-KuiklyLoadingDemo.debug.xcconfig */,
+				7714D63073AD431C7A47D1C5 /* Pods-KuiklyLoadingDemo.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		A40000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000002 /* KuiklyLoadingDemo */,
 				A40000000000000000000003 /* Products */,
+				58A1600C4285FFC458B4A6FE /* Pods */,
+				02C32C89F98AC84A31393935 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -72,9 +97,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A90000000000000000000002 /* Build configuration list for PBXNativeTarget "KuiklyLoadingDemo" */;
 			buildPhases = (
+				082C741F6C091D55DEBFD4C7 /* [CP] Check Pods Manifest.lock */,
 				A60000000000000000000001 /* Sources */,
 				A30000000000000000000001 /* Frameworks */,
 				A60000000000000000000002 /* Resources */,
+				D32F1F70AF9896845627B4EC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -127,6 +154,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		082C741F6C091D55DEBFD4C7 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-KuiklyLoadingDemo-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D32F1F70AF9896845627B4EC /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-KuiklyLoadingDemo/Pods-KuiklyLoadingDemo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-KuiklyLoadingDemo/Pods-KuiklyLoadingDemo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-KuiklyLoadingDemo/Pods-KuiklyLoadingDemo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A60000000000000000000001 /* Sources */ = {
@@ -194,6 +263,7 @@
 		};
 		A80000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 90C27BA9F1954DD8F3EC7DE2 /* Pods-KuiklyLoadingDemo.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -215,6 +285,7 @@
 		};
 		A80000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7714D63073AD431C7A47D1C5 /* Pods-KuiklyLoadingDemo.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

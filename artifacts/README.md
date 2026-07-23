@@ -3,10 +3,11 @@
 Only screenshots and recordings captured from the real Kuikly demo belong in
 this directory. Generated mockups or AI-created images are not acceptable.
 
-Expected final evidence:
+Current evidence:
 
-- Android: full-screen, local, timeout, and custom theme;
-- iOS: full-screen, local, timeout, and custom theme;
-- optional Demo GIF covering replacement, update, touch policy, and lifecycle.
+- Android: gallery, full-screen, timeout before/after, custom theme, local;
+- iOS: gallery, full-screen, timeout before/after, custom theme, local;
+- optional GIF/video: not recorded.
 
-Runtime tooling is currently blocked, so no screenshots are claimed.
+Every PNG was captured from a real simulator and opened for visual inspection.
+Platform details and reproduction commands are in the child README files.

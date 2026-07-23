@@ -9,6 +9,7 @@ import com.tencent.kuikly.core.base.ViewContainer
 import com.tencent.kuikly.core.directives.vif
 import com.tencent.kuikly.core.pager.Pager
 import com.tencent.kuikly.core.reactive.handler.observable
+import com.tencent.kuikly.core.timer.clearTimeout
 import com.tencent.kuikly.core.timer.setTimeout
 import com.tencent.kuikly.core.views.Scroller
 import com.tencent.kuikly.core.views.Text
@@ -33,9 +34,15 @@ public class LoadingGalleryPage : Pager() {
     private var latestEvent: String by observable("尚未触发关闭事件")
     private var underlayTapCount: Int by observable(0)
     private var lifecycleOverlayMounted: Boolean by observable(true)
+    private var acceptanceScenarioScheduled: Boolean = false
+    private var acceptanceScenarioTimer: String? = null
 
     override fun body(): ViewBuilder {
         val context = this
+        val acceptanceScenario = AcceptanceScenario.parse(
+            pagerData.params.optString(ACCEPTANCE_SCENARIO_PARAM)
+        )
+        scheduleAcceptanceScenario(acceptanceScenario)
         return {
             View {
                 attr {
@@ -303,6 +310,53 @@ public class LoadingGalleryPage : Pager() {
                     }
                 }
 
+                if (acceptanceScenario == AcceptanceScenario.LOCAL) {
+                    View {
+                        attr {
+                            positionAbsolute()
+                            left(24f)
+                            right(24f)
+                            top(context.pagerData.statusBarHeight + 185f)
+                            height(220f)
+                            padding(18f)
+                            borderRadius(16f)
+                            backgroundColor(Color(0xFFEFF6FFL))
+                            border(
+                                Border(
+                                    lineWidth = 2f,
+                                    lineStyle = BorderStyle.SOLID,
+                                    color = Color(0xFF60A5FAL),
+                                )
+                            )
+                        }
+                        Text {
+                            attr {
+                                text("Local acceptance stage")
+                                color(Color(0xFF1E3A8AL))
+                                fontSize(18f)
+                                fontWeightSemiBold()
+                            }
+                        }
+                        Text {
+                            attr {
+                                text("遮罩和指示器严格限制在此卡片内")
+                                color(Color(0xFF1D4ED8L))
+                                fontSize(13f)
+                                marginTop(8f)
+                            }
+                        }
+                        LoadingOverlay(context.localController) {
+                            attr {
+                                mode = LoadingMode.LOCAL
+                                defaultMessage = "局部加载"
+                            }
+                            event {
+                                onDismiss(context::recordDismiss)
+                            }
+                        }
+                    }
+                }
+
                 LoadingOverlay(context.fullScreenController) {
                     attr {
                         mode = LoadingMode.FULL_SCREEN
@@ -355,6 +409,59 @@ public class LoadingGalleryPage : Pager() {
 
     private fun recordDismiss(reason: LoadingDismissReason) {
         latestEvent = reason.name
+    }
+
+    override fun pageWillDestroy() {
+        acceptanceScenarioTimer?.let(::clearTimeout)
+        acceptanceScenarioTimer = null
+        super.pageWillDestroy()
+    }
+
+    private fun scheduleAcceptanceScenario(scenario: AcceptanceScenario) {
+        if (
+            acceptanceScenarioScheduled ||
+            scenario == AcceptanceScenario.GALLERY
+        ) {
+            return
+        }
+        acceptanceScenarioScheduled = true
+        acceptanceScenarioTimer = setTimeout(700) {
+            acceptanceScenarioTimer = null
+            when (scenario) {
+                AcceptanceScenario.FULL_SCREEN -> {
+                    fullScreenController.show(
+                        message = "全屏加载验收场景",
+                        timeoutMillis = ACCEPTANCE_TIMEOUT_MILLIS,
+                        blockTouch = true,
+                    )
+                }
+                AcceptanceScenario.TIMEOUT -> {
+                    fullScreenController.show(
+                        message = "自动关闭验收：8 秒倒计时",
+                        timeoutMillis = ACCEPTANCE_TIMEOUT_MILLIS,
+                        blockTouch = true,
+                    )
+                }
+                AcceptanceScenario.CUSTOM_THEME -> {
+                    customThemeController.show(
+                        message = "自定义主题验收场景",
+                        timeoutMillis = ACCEPTANCE_TIMEOUT_MILLIS,
+                    )
+                }
+                AcceptanceScenario.LOCAL -> {
+                    localController.show(
+                        message = "卡片内局部加载",
+                        timeoutMillis = ACCEPTANCE_TIMEOUT_MILLIS,
+                    )
+                }
+                AcceptanceScenario.GALLERY -> Unit
+            }
+        }
+    }
+
+    private companion object {
+        const val ACCEPTANCE_SCENARIO_PARAM: String = "acceptanceScenario"
+        const val ACCEPTANCE_TIMEOUT_MILLIS: Long = 8_000L
     }
 }
 

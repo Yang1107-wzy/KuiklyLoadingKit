@@ -9,10 +9,12 @@ interactive Kuikly gallery.
 
 ## Verified status
 
-As of 2026-07-23, JVM state tests, iOS Simulator ARM64 Kotlin compilation, and
-the iOS static framework link pass. Android and iOS host runtime verification
-remain blocked by the locally missing Android SDK and CocoaPods. No runtime
-screenshots are claimed yet. See [docs/VALIDATION.md](docs/VALIDATION.md).
+As of 2026-07-23, the 21 state/Controller tests, Android Debug APK, iOS
+Simulator ARM64 framework, CocoaPods integration, and the iOS Xcode workspace
+build all pass. The app was cold-started on Android 14 API 34 ARM64 and iPhone
+17 Pro iOS 26.0 simulators. Real gallery, full-screen, timeout before/after,
+custom-theme, and local-overlay screenshots are stored under `artifacts/`.
+See [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Usage
 
@@ -57,16 +59,19 @@ actual parent layout.
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
 
 ./gradlew :loading-kit:desktopTest
 ./gradlew :loading-kit:allTests
+./gradlew :androidApp:assembleDebug
 ./gradlew :shared:compileKotlinIosSimulatorArm64
 ./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64
 ```
 
 Android is enabled automatically when an SDK path is configured. The iOS app
-requires `pod install`; exact commands are in
-[iosApp/README.md](iosApp/README.md).
+uses the project-local CocoaPods version locked by `Gemfile.lock`; exact
+commands are in [iosApp/README.md](iosApp/README.md).
 
 Project-authored code is licensed under
 [Apache License 2.0](LICENSE). Kuikly and other dependencies retain their own
