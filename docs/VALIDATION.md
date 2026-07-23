@@ -4,6 +4,8 @@
 
 Date: 2026-07-23 (Asia/Shanghai)
 
+Validated code commit: `fc4618c`
+
 | Item | Observed state |
 |---|---|
 | macOS | 26.5.2 (25F84) |
@@ -50,6 +52,7 @@ for the current shell only.
 | `./gradlew tasks :loading-kit:allTests ...` | 1 | Native test executable lacked a Kuikly render-host symbol; JVM tests passed |
 | `./gradlew :loading-kit:allTests :shared:compileKotlinIosSimulatorArm64 :shared:podspec :shared:linkPodDebugFrameworkIosSimulatorArm64` | 0 | Final aggregate test/compile/framework verification passed |
 | `./gradlew :loading-kit:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosSimulatorArm64 --rerun-tasks` | 0 | Forced non-cached iOS component and Gallery compilation passed |
+| `./gradlew :loading-kit:allTests :shared:compileKotlinIosSimulatorArm64 :shared:linkPodDebugFrameworkIosSimulatorArm64 --rerun-tasks` | 0 | Final non-cached verification of commit `fc4618c`; 12 tasks executed |
 
 The initial Kotlin/Native run took approximately 4 minutes 21 seconds because
 it downloaded the compiler's LLVM and libffi dependencies. Subsequent compiles
