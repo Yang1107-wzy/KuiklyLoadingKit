@@ -1,150 +1,95 @@
-# Validation log
+# Validation
 
-Status date: 2026-07-23 (Asia/Shanghai)
+验证日期：2026-07-23
 
-## Verified environment
+## 测试环境
 
-| Item | Verified value |
+| 项目 | 版本 |
 |---|---|
 | macOS | 26.5.2 (25F84), arm64 |
-| Project JDK | Homebrew OpenJDK 17.0.17 |
+| JDK | OpenJDK 17.0.17 |
 | Gradle | 8.7 |
 | Android Gradle Plugin | 8.6.1 |
 | Kotlin | 2.1.21 |
 | KSP | 2.1.21-2.0.1 |
 | Kuikly | 2.23.2-2.1.21 |
 | Android SDK | API 34, Build Tools 34.0.0 |
-| Android emulator | 36.6.11 |
-| Android system image | API 34 Google APIs ARM64 r14 |
-| Android AVD | Pixel 7 profile, Android 14, arm64-v8a |
+| Android Emulator | 36.6.11 |
 | Xcode | 26.0.1 (17A400) |
-| iOS simulator | iPhone 17 Pro, iOS 26.0 |
-| CocoaPods | 1.17.0, project-local Bundler install |
+| CocoaPods | 1.17.0 |
 
-The global default Java, global Ruby gems, Xcode selection, Git configuration,
-and signing settings were not changed.
-
-## Automated and build verification
-
-All Gradle commands use JDK 17. iOS commands additionally use:
+## 构建与测试
 
 ```bash
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+./gradlew --no-build-cache --rerun-tasks \
+  :loading-kit:allTests \
+  :androidApp:assembleDebug \
+  :shared:compileTestKotlinIosSimulatorArm64 \
+  :shared:linkPodDebugFrameworkIosSimulatorArm64
 ```
 
-Android commands additionally use the user SDK through `ANDROID_SDK_ROOT` and
-`ANDROID_HOME`.
+该命令共执行 102 个 Gradle 任务，结果为 `BUILD SUCCESSFUL`。
 
-| Command | Result |
+| 检查项 | 结果 |
 |---|---|
-| `./gradlew tasks` | Pass |
-| `./gradlew :loading-kit:allTests` | Pass |
-| `./gradlew :shared:compileTestKotlinIosSimulatorArm64` | Pass |
-| `./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64` | Pass |
-| `./gradlew :androidApp:assembleDebug` | Pass |
-| `bundle exec pod install` from `iosApp/` | Pass, 2 Pods installed |
-| `xcodebuild ... -scheme KuiklyLoadingDemo ... build` | Pass |
-| `plutil -lint iosApp/KuiklyLoadingDemo/Info.plist` | Pass |
+| 状态机测试 | 12 项通过 |
+| Controller 测试 | 9 项通过 |
+| Android Debug APK | 通过 |
+| iOS Simulator 测试源码编译 | 通过 |
+| iOS Simulator Framework 链接 | 通过 |
+| CocoaPods 安装 | 2 个 Pod 安装成功 |
+| Xcode workspace 构建 | 通过 |
+| `Info.plist` 校验 | 通过 |
 
-The pure state/Controller suite contains 21 JVM tests: 12 state-machine tests
-and 9 Controller tests. The acceptance-scenario parser is also compiled as a
-Kotlin/Native test source. Standalone native test executables remain
-intentionally skipped because Kuikly core expects the render-host symbol
-`com_tencent_kuikly_IsCurrentOnContextThread`; native compatibility is
-validated by compilation, framework linking, Pods integration, and the real
-iOS host run.
+`loading-kit:allTests` 运行纯 Kotlin 状态机和 Controller 测试。iOS 端通过
+Kotlin/Native 编译、Framework 链接、CocoaPods 集成和宿主运行检查兼容性。
 
-## Real runtime verification
+## Android
 
-### Android
+- 设备：Pixel 7 模拟器
+- 系统：Android 14，API 34，`arm64-v8a`
+- 分辨率：1080 × 2400
+- APK：`androidApp/build/outputs/apk/debug/androidApp-debug.apk`
 
-- Built APK: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
-- Emulator: Android 14, API 34, `arm64-v8a`, 1080 × 2400
-- Install: `adb install -r ...` returned `Success`
-- Launch: cold start returned `Status: ok`
-- Screenshots were captured with `adb exec-out screencap -p`
+已运行的场景：
 
-Verified states:
+- Demo 列表
+- 全屏 Loading
+- 局部 Loading
+- 超时关闭前后
+- 自定义主题
 
-- interactive gallery;
-- full-screen overlay;
-- timeout overlay while visible;
-- timeout overlay after dismissal, with `Last event: TIMEOUT`;
-- custom theme;
-- local overlay bounded by its acceptance card.
+截图位于 [artifacts/android](../artifacts/android/)。
 
-### iOS
+## iOS
 
-- Host built from `iosApp/KuiklyLoadingDemo.xcworkspace`
-- Simulator: iPhone 17 Pro, iOS 26.0, 1206 × 2622
-- Install: `xcrun simctl install` passed
-- Launch: bundle `io.github.yang1107.KuiklyLoadingDemo` returned a process id
-- Screenshots were captured with `xcrun simctl io ... screenshot`
+- 设备：iPhone 17 Pro 模拟器
+- 系统：iOS 26.0
+- 分辨率：1206 × 2622
+- 宿主：`iosApp/KuiklyLoadingDemo.xcworkspace`
 
-Verified states:
+已运行的场景：
 
-- interactive gallery;
-- full-screen overlay;
-- timeout overlay while visible;
-- timeout overlay after dismissal, with `Last event: TIMEOUT`;
-- custom theme;
-- local overlay bounded by its acceptance card.
+- Demo 列表
+- 全屏 Loading
+- 局部 Loading
+- 超时关闭前后
+- 自定义主题
 
-All runtime images were opened and visually inspected after capture. They were
-not generated, composited, or substituted.
+截图位于 [artifacts/ios](../artifacts/ios/)。
 
-## Failure and repair record
+## 截图索引
 
-1. The first state tests failed because the production types did not exist.
-   This was the intentional TDD red phase.
-2. The original direct Kuikly dependency had no JVM variant. Kuikly UI code
-   was isolated in a dedicated source set so the pure JVM test surface remains
-   executable.
-3. The first iOS host naming used the same module name for app and framework.
-   The framework was renamed to `KuiklyLoadingShared`.
-4. A standalone native test executable lacked a symbol supplied by the iOS
-   render host. The project does not inject a fake production symbol; it uses
-   JVM pure tests plus native integration checks.
-5. CocoaPods was absent. Version 1.17.0 was installed only in
-   `vendor/bundle`, then `pod install` completed.
-6. AGP 7.4.2 failed D8 transforms on Kotlin 2.1 bytecode with
-   `com.android.tools.r8.kotlin.H`. Android's compatibility matrix requires
-   D8/R8 8.6.17 for Kotlin 2.1, so the project moved to AGP 8.6.1 and Gradle
-   8.7. The next `assembleDebug` passed.
-7. Homebrew's `avdmanager` could not see a separate user SDK root. The same
-   official command-line tools were installed inside that SDK root; the AVD
-   then created and booted successfully.
-8. macOS Computer Use permissions were unavailable. Rather than bypass OS
-   permissions, reproducible host launch parameters were added to place the
-   real app in each evidence state before normal simulator screenshot capture.
+| 场景 | Android | iOS |
+|---|---|---|
+| Gallery | [图片](../artifacts/android/android-gallery.png) | [图片](../artifacts/ios/ios-gallery.png) |
+| Full screen | [图片](../artifacts/android/android-full-screen.png) | [图片](../artifacts/ios/ios-full-screen.png) |
+| Local | [图片](../artifacts/android/android-local.png) | [图片](../artifacts/ios/ios-local.png) |
+| Timeout | [关闭前](../artifacts/android/android-timeout.png) / [关闭后](../artifacts/android/android-timeout-dismissed.png) | [关闭前](../artifacts/ios/ios-timeout.png) / [关闭后](../artifacts/ios/ios-timeout-dismissed.png) |
+| Custom theme | [图片](../artifacts/android/android-custom-theme.png) | [图片](../artifacts/ios/ios-custom-theme.png) |
 
-## Evidence paths
+## 补充说明
 
-Android:
-
-- `artifacts/android/android-gallery.png`
-- `artifacts/android/android-full-screen.png`
-- `artifacts/android/android-timeout.png`
-- `artifacts/android/android-timeout-dismissed.png`
-- `artifacts/android/android-custom-theme.png`
-- `artifacts/android/android-local.png`
-
-iOS:
-
-- `artifacts/ios/ios-gallery.png`
-- `artifacts/ios/ios-full-screen.png`
-- `artifacts/ios/ios-timeout.png`
-- `artifacts/ios/ios-timeout-dismissed.png`
-- `artifacts/ios/ios-custom-theme.png`
-- `artifacts/ios/ios-local.png`
-
-## Remaining manual boundaries
-
-- The screenshots prove rendered states and timeout dismissal, but not the
-  subjective smoothness of the fade animation.
-- `blockTouch=false` compiles and is demonstrated in the gallery; a human tap
-  pass-through session was not automated because macOS UI-control permission
-  was unavailable.
-- Project-side acceptance and activity certificate registration remain
-  external actions. No GitHub repository, push, release, or Issue completion
-  comment has been created by this local run.
+- 截图记录了主要显示状态和超时关闭结果。
+- 淡入淡出动画已接入组件，当前仓库未提供录屏。
+- `blockTouch` 已接入 Demo，未单独提供触摸穿透录屏。

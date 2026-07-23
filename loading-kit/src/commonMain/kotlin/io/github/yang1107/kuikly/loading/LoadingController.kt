@@ -12,10 +12,10 @@ internal interface LoadingControllerBinding {
 /**
  * Imperative owner of one loading request at a time.
  *
- * Calls are designed for ordered Kuikly UI-thread use. This class does not
- * claim thread safety. Calls made while unbound update the latest state and
- * are delivered when an overlay binds; a positive timeout starts when that
- * state reaches a binding. Rebinding an active request preserves its original
+ * Calls are designed for ordered Kuikly UI-thread use and are not synchronized
+ * across threads. Calls made while unbound update the latest state and are
+ * delivered when an overlay binds; a positive timeout starts when that state
+ * reaches a binding. Rebinding an active request preserves its original
  * deadline instead of restarting the full timeout.
  */
 public class LoadingController internal constructor(

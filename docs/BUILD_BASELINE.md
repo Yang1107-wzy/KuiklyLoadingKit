@@ -1,26 +1,38 @@
-# Build baseline
+# Build
 
-Status: cross-platform release candidate verified locally on 2026-07-23.
-
-## Required commands
+## Environment variables
 
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
 export ANDROID_HOME="$ANDROID_SDK_ROOT"
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+```
 
-./gradlew tasks
+## Gradle
+
+```bash
 ./gradlew :loading-kit:allTests
 ./gradlew :androidApp:assembleDebug
 ./gradlew :shared:compileTestKotlinIosSimulatorArm64
 ./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64
+```
+
+## CocoaPods
+
+```bash
+./gradlew :shared:generateDummyFramework
+bundle config set --local path vendor/bundle
+bundle install
 
 cd iosApp
 bundle exec pod install
 cd ..
+```
 
+## Xcode
+
+```bash
 xcodebuild \
   -workspace iosApp/KuiklyLoadingDemo.xcworkspace \
   -scheme KuiklyLoadingDemo \
@@ -31,10 +43,7 @@ xcodebuild \
   build
 ```
 
-All commands above have passed on the environment documented in
-`docs/ENVIRONMENT.md`.
-
-## Runtime baseline
+## Run
 
 Android:
 
@@ -51,7 +60,3 @@ xcrun simctl install booted \
   build/ios-derived/Build/Products/Debug-iphonesimulator/KuiklyLoadingDemo.app
 xcrun simctl launch booted io.github.yang1107.KuiklyLoadingDemo
 ```
-
-Both hosts have been installed and cold-started successfully on ARM64
-simulators. Reproducible evidence launch parameters are documented beside the
-screenshots in `artifacts/android/README.md` and `artifacts/ios/README.md`.

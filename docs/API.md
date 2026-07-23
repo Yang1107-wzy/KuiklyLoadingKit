@@ -53,8 +53,8 @@ class LoadingController {
 }
 ```
 
-The Controller is designed for ordered Kuikly UI-thread calls. It does not
-claim general multi-thread safety.
+The Controller is designed for ordered calls on the Kuikly UI thread.
+Concurrent calls from multiple threads are not synchronized.
 
 - `show`: creates a new generation and replaces the current request.
 - `showDefaults`: consumes the currently bound Overlay defaults; returns
@@ -109,7 +109,8 @@ LoadingOverlay(controller) {
 - `messageColor`
 - `messageFontSize`
 
-Radius/padding must be non-negative. Scale and font size must be positive.
+Radius and padding accept non-negative values. Scale and font size accept
+positive values.
 
 Kuikly fixes `ActivityIndicator` at approximately `20f × 20f`; scale is applied
 with `transform(Scale(...))`. Gray/white style is initialization-time only.
@@ -128,8 +129,8 @@ event {
 
 When visible, the root uses either `touchEnable(true)` or
 `touchEnable(false)` from the effective request/default. Hidden Overlays are
-transparent and touch-disabled. Cross-platform pass-through remains subject to
-the native Kuikly renderer and must be runtime-validated.
+transparent and touch-disabled. Pass-through behavior follows the native
+Kuikly renderer.
 
 ## Animation
 

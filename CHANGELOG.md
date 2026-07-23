@@ -1,14 +1,12 @@
 # Changelog
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-07-23
 
-- Added pure Kotlin loading request state machine.
-- Added `LoadingController` with show, hide, update, defaults, replacement,
-  generation validation, and lifecycle semantics.
-- Added full-screen and local Kuikly overlays using `ActivityIndicator`.
-- Added mode-specific themes, touch policy, and configurable fade animation.
-- Added deterministic controller and timeout tests.
-- Added an interactive `LoadingGalleryPage`.
-- Added minimal Android and iOS hosts plus API and validation documentation.
-
-Runtime evidence and the public release remain pending.
+- Added full-screen and local Kuikly loading overlays.
+- Added `LoadingController` and a declarative DSL.
+- Added timeout dismissal, request replacement, and lifecycle cleanup.
+- Added mode-specific themes, touch behavior, and fade transitions.
+- Added 21 state-machine and Controller tests.
+- Added Android and iOS demo hosts.
+- Added API, architecture, build, and validation documentation.
+- Verified the component on Android and iOS simulators.

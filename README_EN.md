@@ -1,20 +1,20 @@
 # KuiklyLoadingKit
 
-KuiklyLoadingKit is an independent implementation for
-[Tencent-TDS/KuiklyUI issue #1480](https://github.com/Tencent-TDS/KuiklyUI/issues/1480).
-It provides full-screen and parent-bounded loading overlays, a deterministic
-controller/state machine, timeout replacement safety, lifecycle cleanup,
-mode-specific themes, touch policy, fade transitions, tests, and an
-interactive Kuikly gallery.
+KuiklyLoadingKit is a cross-platform loading component for KuiklyUI, developed
+for [Tencent-TDS/KuiklyUI #1480](https://github.com/Tencent-TDS/KuiklyUI/issues/1480).
+It provides full-screen and parent-bounded overlays, timeout dismissal, a
+controller API, a declarative DSL, Android/iOS demos, and automated tests.
 
-## Verified status
+## Features
 
-As of 2026-07-23, the 21 state/Controller tests, Android Debug APK, iOS
-Simulator ARM64 framework, CocoaPods integration, and the iOS Xcode workspace
-build all pass. The app was cold-started on Android 14 API 34 ARM64 and iPhone
-17 Pro iOS 26.0 simulators. Real gallery, full-screen, timeout before/after,
-custom-theme, and local-overlay screenshots are stored under `artifacts/`.
-See [docs/VALIDATION.md](docs/VALIDATION.md).
+- Full-screen and local loading overlays
+- Kuikly `ActivityIndicator`
+- `show`, `hide`, `updateMessage`, and `showDefaults`
+- Cancellable timeout dismissal
+- Request replacement with stale-timeout protection
+- Separate themes for full-screen and local modes
+- Configurable message, mask, panel, indicator scale, and touch behavior
+- Fade transitions and lifecycle cleanup
 
 ## Usage
 
@@ -46,13 +46,8 @@ controller.updateMessage("Processing")
 controller.hide()
 ```
 
-`timeoutMillis == null`, zero, or a negative value means no automatic
-dismissal. `showDefaults()` is the explicit API that consumes DSL defaults.
-Repeated `hide()` calls are no-ops.
-
-Attach a `FULL_SCREEN` overlay to the page root. Attach a `LOCAL` overlay to
-the bounded parent it should cover. The component cannot render outside its
-actual parent layout.
+A `null`, zero, or negative timeout disables automatic dismissal. A local
+overlay fills its actual parent container.
 
 ## Build
 
@@ -62,17 +57,22 @@ export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
 export ANDROID_HOME="$ANDROID_SDK_ROOT"
 
-./gradlew :loading-kit:desktopTest
 ./gradlew :loading-kit:allTests
 ./gradlew :androidApp:assembleDebug
-./gradlew :shared:compileKotlinIosSimulatorArm64
+./gradlew :shared:compileTestKotlinIosSimulatorArm64
 ./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64
 ```
 
-Android is enabled automatically when an SDK path is configured. The iOS app
-uses the project-local CocoaPods version locked by `Gemfile.lock`; exact
-commands are in [iosApp/README.md](iosApp/README.md).
+The iOS host setup is documented in [iosApp/README.md](iosApp/README.md).
 
-Project-authored code is licensed under
-[Apache License 2.0](LICENSE). Kuikly and other dependencies retain their own
-licenses.
+## Validation
+
+- 21 state-machine and Controller tests
+- Android 14 / API 34 ARM64 emulator
+- iPhone 17 Pro / iOS 26.0 simulator
+- Android APK, Kotlin/Native framework, CocoaPods, and Xcode workspace builds
+
+The command log and runtime screenshots are listed in
+[docs/VALIDATION.md](docs/VALIDATION.md).
+
+Project code is licensed under [Apache License 2.0](LICENSE).

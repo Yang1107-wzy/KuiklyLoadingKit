@@ -1,39 +1,37 @@
-# iOS host
+# iOS Demo
 
-This directory contains the minimal SwiftUI/UIKit host used to run
-`LoadingGalleryPage` on an iOS Simulator.
+`iosApp` 是运行 `LoadingGalleryPage` 的 iOS 示例宿主。
 
-The host deliberately contains no signing team. It uses:
+- Deployment target：iOS 14.1
+- Render：`OpenKuiklyIOSRender` 2.23.2
+- Kotlin framework：`KuiklyLoadingShared`
+- App target：`KuiklyLoadingDemo`
 
-- `OpenKuiklyIOSRender` version `2.23.2`;
-- the local `shared` CocoaPod produced by Kotlin Multiplatform;
-- framework name `KuiklyLoadingShared` (kept distinct from the app module);
-- deployment target iOS 14.1.
+## Install Pods
 
-Install the pinned project-local bundle only after user approval:
+在仓库根目录执行：
 
 ```bash
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" \
-  bundle config set --local path vendor/bundle
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" \
-  bundle install
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+
+./gradlew :shared:generateDummyFramework
+bundle config set --local path vendor/bundle
+bundle install
+
+cd iosApp
+bundle exec pod install
+cd ..
 ```
 
-Then run:
+## Build
 
 ```bash
-cd iosApp
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec pod install
-cd ..
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  xcodebuild \
+xcodebuild \
   -workspace iosApp/KuiklyLoadingDemo.xcworkspace \
   -scheme KuiklyLoadingDemo \
-  -sdk iphonesimulator \
   -configuration Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   CODE_SIGNING_ALLOWED=NO \
   build
 ```
-
-Do not commit `Pods/`, DerivedData, workspace user data, or signing settings.

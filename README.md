@@ -1,56 +1,41 @@
 # KuiklyLoadingKit
 
-KuiklyLoadingKit 是为
-[Tencent-TDS/KuiklyUI Issue #1480](https://github.com/Tencent-TDS/KuiklyUI/issues/1480)
-独立实现的 Kuikly 跨平台加载框组件。项目将纯 Kotlin 请求状态机与
-Kuikly UI 分离，提供全屏/局部 Overlay、命令式 Controller、声明式 DSL、
-超时失效控制、生命周期清理、主题、触摸策略、淡入淡出动画和交互式 Demo。
-
-本仓库不包含 KuiklyUI Fork，也没有复制其他参与者的加载组件实现。
+KuiklyLoadingKit 是一个基于 KuiklyUI 的跨平台 Loading 组件，对应
+[Tencent-TDS/KuiklyUI #1480](https://github.com/Tencent-TDS/KuiklyUI/issues/1480)。
+组件支持全屏和局部加载、超时关闭、命令式 Controller 与声明式 DSL，并提供
+Android、iOS 示例工程和自动化测试。
 
 ## 功能
 
-- `FULL_SCREEN`：放在页面根容器，覆盖页面可见区域；
-- `LOCAL`：放在目标父容器，只覆盖该父容器布局边界；
-- Kuikly `ActivityIndicator` 默认指示器；
-- `show`、`hide`、`updateMessage`、`showDefaults`；
-- 正超时自动关闭，空值、零值和负值均表示不自动关闭；
-- generation/token 与物理 `clearTimeout` 双重保护；
-- `MANUAL`、`TIMEOUT`、`REPLACED`、`DESTROYED` 关闭原因；
-- 全屏/局部模式独立主题；
-- 遮罩、面板、圆角、内边距、文字和指示器缩放配置；
-- 可配置触摸拦截及淡入淡出；
-- 纯 Kotlin 状态机与 Controller 自动化测试；
-- 覆盖 Issue 场景的 `LoadingGalleryPage`。
+- 全屏遮罩和局部区域两种模式
+- Kuikly `ActivityIndicator` 默认加载指示器
+- `show`、`hide`、`updateMessage`、`showDefaults`
+- 可取消的超时关闭
+- 重复 `show` 时的请求替换和旧计时器失效
+- 全屏/局部模式独立主题
+- 提示文字、遮罩、面板、圆角和指示器缩放配置
+- 触摸拦截开关和淡入淡出动画
+- 页面卸载与销毁时的资源清理
+- 纯 Kotlin 状态机和 Controller 测试
 
-## 当前验证状态
+## 运行效果
 
-截至 2026-07-23：
+| Android | iOS |
+|---|---|
+| ![Android full-screen](artifacts/android/android-full-screen.png) | ![iOS full-screen](artifacts/ios/ios-full-screen.png) |
+| ![Android local](artifacts/android/android-local.png) | ![iOS local](artifacts/ios/ios-local.png) |
 
-| 范围 | 状态 | 说明 |
-|---|---|---|
-| JVM 状态测试 | Pass | 21 个状态机/Controller 测试 |
-| Android Debug APK | Pass | `:androidApp:assembleDebug` |
-| Android API 34 ARM64 运行 | Pass | 冷启动及 6 张真实截图 |
-| iOS Simulator ARM64 组件编译 | Pass | `:loading-kit:compileKotlinIosSimulatorArm64` |
-| iOS Simulator ARM64 Demo 编译 | Pass | `:shared:compileKotlinIosSimulatorArm64` |
-| iOS 静态 Framework | Pass | `:shared:linkPodDebugFrameworkIosSimulatorArm64` |
-| CocoaPods / iOS 宿主 | Pass | Pods 集成及 Xcode workspace 构建 |
-| iPhone 17 Pro 模拟器运行 | Pass | 冷启动及 6 张真实截图 |
-| 超时关闭 | Pass | Android/iOS 均有关闭前后证据 |
+更多截图见 [artifacts](artifacts/README.md)。
 
-完整命令、环境和证据边界见
-[docs/VALIDATION.md](docs/VALIDATION.md)。
+## 基本用法
 
-## 最小用法
-
-先创建 Controller：
+创建 Controller：
 
 ```kotlin
 private val loadingController = LoadingController()
 ```
 
-将全屏 Overlay 放在页面根容器的最后：
+在页面根容器中声明全屏 Loading：
 
 ```kotlin
 LoadingOverlay(loadingController) {
@@ -67,7 +52,7 @@ LoadingOverlay(loadingController) {
 }
 ```
 
-显示、更新与关闭：
+显示、更新和关闭：
 
 ```kotlin
 loadingController.show(
@@ -80,31 +65,12 @@ loadingController.updateMessage("正在处理结果")
 loadingController.hide()
 ```
 
-`hide()` 是幂等操作；隐藏状态重复调用不会重复触发关闭事件。
+`timeoutMillis` 为 `null`、`0` 或负数时不启用自动关闭。`hide()` 可重复调用，
+隐藏状态下不会重复触发回调。
 
-## 默认值 DSL
+## 局部 Loading
 
-`show()` 中的 `timeoutMillis = null` 始终表示“不自动关闭”。为了不混淆
-这个规则，DSL 中的 `defaultTimeoutMillis` 只由显式的 `showDefaults()` 使用：
-
-```kotlin
-LoadingOverlay(loadingController) {
-    attr {
-        defaultMessage = "同步中…"
-        defaultTimeoutMillis = 3_000L
-        blockTouch = true
-    }
-}
-
-loadingController.showDefaults()
-```
-
-Controller 未绑定时 `showDefaults()` 返回 `false`；普通 `show()` 在未绑定时
-仍会安全保存最新状态，并在 Overlay 绑定后渲染。
-
-## 局部模式
-
-局部 Overlay 必须是目标容器的子元素，推荐作为最后一个子元素：
+局部 Loading 放在需要覆盖的父容器中：
 
 ```kotlin
 View {
@@ -113,7 +79,7 @@ View {
         positionRelative()
     }
 
-    // Local content...
+    // 页面内容
 
     LoadingOverlay(localController) {
         attr {
@@ -123,10 +89,28 @@ View {
 }
 ```
 
-组件使用 `absolutePositionAllZero()` 填充父容器，不能超越父容器的真实布局
-边界。`FULL_SCREEN` 和 `LOCAL` 的差异由声明位置及各自主题共同表达。
+组件通过 `absolutePositionAllZero()` 填充实际父容器，因此局部模式不会超出
+父容器边界。
 
-## 主题与动画
+## 默认配置
+
+DSL 中的默认超时由 `showDefaults()` 使用：
+
+```kotlin
+LoadingOverlay(loadingController) {
+    attr {
+        defaultMessage = "同步中…"
+        defaultTimeoutMillis = 3_000L
+    }
+}
+
+loadingController.showDefaults()
+```
+
+普通 `show()` 保持参数本身的语义，不会自动套用
+`defaultTimeoutMillis`。
+
+## 主题和动画
 
 ```kotlin
 LoadingOverlay(loadingController) {
@@ -141,9 +125,6 @@ LoadingOverlay(loadingController) {
             messageColor = Color.WHITE
             messageFontSize = 15f
         }
-        localTheme {
-            maskColor = Color(0x2200AA55L)
-        }
         animation {
             enabled = true
             durationMillis = 200L
@@ -152,53 +133,35 @@ LoadingOverlay(loadingController) {
 }
 ```
 
-Kuikly 的 `ActivityIndicator` 跨端固定约为 `20f × 20f`，本组件使用
-`transform(Scale(...))` 调整显示比例。`indicatorGrayStyle` 是初始化配置，
-不会承诺运行时动态切换。
+## 状态行为
 
-## 超时与替换语义
+当新的 `show()` 替换当前请求时，旧请求收到一次 `REPLACED`，旧计时器同时
+取消。每个计时回调还会校验 generation，避免旧回调关闭新请求。
 
-```text
-show(A, timeout=5s)
-2s 后 show(B, timeout=10s)
-```
+关闭原因包括：
 
-- A 立即收到一次 `REPLACED`；
-- A 的原 Timeout 会被取消，并由 generation 再次校验；
-- A 的旧回调不能关闭 B；
-- B 从第二次 `show()` 起重新计时；
-- 每个请求最多产生一次最终关闭事件。
+- `MANUAL`
+- `TIMEOUT`
+- `REPLACED`
+- `DESTROYED`
 
-## 生命周期
-
-Overlay 在 `viewDidLoad` 绑定 Controller，在 `viewWillUnload` /
-`viewDestroyed` 解除绑定、取消计时器并使旧回调失效。若销毁时请求可见，
-只产生一次 `DESTROYED`。旧 View 被替换绑定后不再接收新状态。
-
-## 触摸行为
-
-- `blockTouch = true`：可见时启用 Overlay 的命中，拦截其覆盖区域；
-- `blockTouch = false`：通过 Kuikly `touchEnable(false)` 尝试允许底层交互；
-- 隐藏时 Overlay 始终透明且禁用触摸。
-
-Android/iOS 宿主均已完成渲染验证。受本机 macOS 界面控制权限限制，
-`blockTouch=false` 的人工点按穿透仍列为手工验收项，不把编译通过夸大为
-已完成交互验证。
+详细状态转换见 [docs/STATE_MACHINE.md](docs/STATE_MACHINE.md)。
 
 ## 工程结构
 
 ```text
-loading-kit/  可复用组件、纯状态机、Controller 和测试
-shared/       LoadingGalleryPage 与 KMP/CocoaPods Framework
-androidApp/   最小 Android Kuikly 宿主
-iosApp/       最小 iOS Kuikly 宿主
-docs/         API、架构、状态机、决策和验证记录
-artifacts/    只保存真实运行证据
+loading-kit/  组件、状态机、Controller 和测试
+shared/       Kuikly Demo 页面与 iOS Framework
+androidApp/   Android 示例宿主
+iosApp/       iOS 示例宿主
+docs/         API、架构、构建与验证文档
+artifacts/    Android/iOS 运行截图
 ```
 
-## 本地构建
+## 构建
 
-要求 JDK 17。以下命令只为当前 Shell 指定 Java，不修改全局默认：
+项目使用 JDK 17、Gradle 8.7、Kotlin 2.1.21 和 Kuikly
+2.23.2-2.1.21。
 
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
@@ -206,92 +169,45 @@ export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
 export ANDROID_HOME="$ANDROID_SDK_ROOT"
 
-./gradlew :loading-kit:desktopTest
 ./gradlew :loading-kit:allTests
 ./gradlew :androidApp:assembleDebug
-./gradlew :shared:compileKotlinIosSimulatorArm64
+./gradlew :shared:compileTestKotlinIosSimulatorArm64
 ./gradlew :shared:linkPodDebugFrameworkIosSimulatorArm64
 ```
 
-Android SDK 存在时，项目会自动启用 Android target 和 `androidApp`。
+iOS 宿主的 CocoaPods 和 Xcode 构建步骤见
+[iosApp/README.md](iosApp/README.md)。
 
-iOS 宿主使用 `Gemfile` 锁定的项目本地 CocoaPods：
+## 验证结果
 
-```bash
-./gradlew :shared:generateDummyFramework
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle config set --local path vendor/bundle
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle install
-cd iosApp
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec pod install
-cd ..
+| 项目 | 结果 |
+|---|---|
+| 状态机与 Controller 测试 | 21 项通过 |
+| Android Debug APK | 通过 |
+| Android 14 / API 34 ARM64 模拟器 | 运行通过 |
+| iOS Simulator ARM64 Framework | 通过 |
+| CocoaPods 集成 | 通过 |
+| iPhone 17 Pro / iOS 26.0 模拟器 | 运行通过 |
 
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-xcodebuild \
-  -workspace iosApp/KuiklyLoadingDemo.xcworkspace \
-  -scheme KuiklyLoadingDemo \
-  -sdk iphonesimulator \
-  -configuration Debug \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-```
-
-## Demo
-
-`LoadingGalleryPage` 提供：
-
-- FullScreenLoadingDemo
-- LocalLoadingDemo
-- TimeoutLoadingDemo
-- RepeatedShowDemo
-- UpdateMessageDemo
-- CustomThemeDemo
-- TouchBlockingDemo
-- LifecycleCleanupDemo
-
-Android/iOS 宿主均以 `LoadingGalleryPage` 为入口。证据目录中的图片均由
-实际模拟器采集并人工检查。
-
-![Android full-screen loading](artifacts/android/android-full-screen.png)
-
-![iOS local loading](artifacts/ios/ios-local.png)
-
-为了在没有 macOS 辅助功能权限时仍能重复生成验收证据，宿主支持只用于
-验收的启动场景：
-
-```bash
-adb shell am start -W \
-  -n io.github.yang1107.kuikly.loading.demo/.MainActivity \
-  --es acceptanceScenario custom-theme
-
-xcrun simctl launch booted \
-  io.github.yang1107.KuiklyLoadingDemo \
-  --acceptance-scenario custom-theme
-```
-
-支持 `full-screen`、`timeout`、`custom-theme`、`local`；不传参数时仍进入
-完整交互式 Gallery。
-
-## 已知限制
-
-- 真实动画轨迹未录制为 GIF，当前证据覆盖进入态和超时关闭前后；
-- `blockTouch=false` 的人工点按穿透尚待手工验收；
-- Android target 在没有 SDK 的机器上会被构建配置有意关闭；
-- 未发布 Maven/CocoaPods 远程制品，目前通过项目依赖使用；
-- H5 不在 Issue #1480 的 P0 范围。
+完整命令和截图索引见 [docs/VALIDATION.md](docs/VALIDATION.md)。
 
 ## 文档
 
 - [API](docs/API.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [State machine](docs/STATE_MACHINE.md)
-- [Environment](docs/ENVIRONMENT.md)
-- [Build baseline](docs/BUILD_BASELINE.md)
-- [Validation](docs/VALIDATION.md)
-- [Issue #1480 checklist](docs/ISSUE_1480_CHECKLIST.md)
-- [Originality and references](docs/ORIGINALITY_AND_REFERENCES.md)
+- [架构](docs/ARCHITECTURE.md)
+- [状态机](docs/STATE_MACHINE.md)
+- [构建说明](docs/BUILD_BASELINE.md)
+- [验证记录](docs/VALIDATION.md)
+- [Issue #1480 对照表](docs/ISSUE_1480_CHECKLIST.md)
+- [参考资料](docs/REFERENCES.md)
+
+## 已知限制
+
+- 当前 release 提供源码接入，不包含 Maven Central 或 CocoaPods Specs
+  包。
+- 截图覆盖主要静态状态和超时关闭前后，未提供动画录屏。
+- H5 不在本次实现范围内。
 
 ## License
 
-本项目自有代码使用 [Apache License 2.0](LICENSE)。Kuikly 及其他依赖继续
-受各自许可证约束。
+本项目代码使用 [Apache License 2.0](LICENSE)。
