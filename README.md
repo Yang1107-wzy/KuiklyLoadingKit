@@ -1,9 +1,13 @@
 # KuiklyLoadingKit
 
+简体中文 | [English](README.en.md)
+
 KuiklyLoadingKit 是一个基于 KuiklyUI 的跨平台 Loading 组件，对应
 [Tencent-TDS/KuiklyUI #1480](https://github.com/Tencent-TDS/KuiklyUI/issues/1480)。
 组件支持全屏和局部加载、超时关闭、命令式 Controller 与声明式 DSL，并提供
 Android、iOS 示例工程和自动化测试。
+
+官方生态任务已获项目协作者[确认完成](https://github.com/Tencent-TDS/KuiklyUI/issues/1480#issuecomment-5192793318)。组件与示例以本仓库独立交付。
 
 ## 功能
 
